@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html>
+<head>
+            <style>/* --- ROOT VARIABLES --- */
+:root {
+    --font-primary: 'Poppins', sans-serif;
+    
+    /* Light Theme */
+    --color-bg-light: #F0F2F5;
+    --color-sidebar-light: #FFFFFF;
+    --color-chat-area-light: #E4E6EB;
+    --color-header-footer-light: #FFFFFF;
+    --color-text-primary-light: #050505;
+    --color-text-secondary-light: #65676B;
+    --color-user-msg-light: #0084FF;
+    --color-user-msg-text-light: #FFFFFF;
+    --color-bot-msg-light: #FFFFFF;
+    --color-accent-light: #0084FF;
+    --color-border-light: #CED0D4;
+    --color-destructive-light: #fa3838;
+
+    /* Dark Theme */
+    --color-bg-dark: #18191A;
+    --color-sidebar-dark: #242526;
+    --color-chat-area-dark: #18191A;
+    --color-header-footer-dark: #242526;
+    --color-text-primary-dark: #E4E6EB;
+    --color-text-secondary-dark: #B0B3B8;
+    --color-user-msg-dark: #7F5AF0;
+    --color-user-msg-text-dark: #FFFFFF;
+    --color-bot-msg-dark: #3A3B3C;
+    --color-accent-dark: #7F5AF0;
+    --color-border-dark: #3A3B3C;
+    --color-destructive-dark: #ff4d4d;
+
+    --transition-speed: 0.3s;
+}
+
+/* --- APPLYING THEME --- */
+body {
+    --bg-color: var(--color-bg-light);
+    --sidebar-color: var(--color-sidebar-light);
+    --chat-area-color: var(--color-chat-area-light);
+    --header-footer-color: var(--color-header-footer-light);
+    --text-primary: var(--color-text-primary-light);
+    --text-secondary: var(--color-text-secondary-light);
+    --user-msg-bg: var(--color-user-msg-light);
+    --user-msg-text: var(--color-user-msg-text-light);
+    --bot-msg-bg: var(--color-bot-msg-light);
+    --accent-color: var(--color-accent-light);
+    --border-color: var(--color-border-light);
+    --destructive-color: var(--color-destructive-light);
+}
+
+body.dark-mode {
+    --bg-color: var(--color-bg-dark);
+    --sidebar-color: var(--color-sidebar-dark);
+    --chat-area-color: var(--color-chat-area-dark);
+    --header-footer-color: var(--color-header-footer-dark);
+    --text-primary: var(--color-text-primary-dark);
+    --text-secondary: var(--color-text-secondary-dark);
+    --user-msg-bg: var(--color-user-msg-dark);
+    --user-msg-text: var(--color-user-msg-text-dark);
+    --bot-msg-bg: var(--color-bot-msg-dark);
+    --accent-color: var(--color-accent-dark);
+    --border-color: var(--color-border-dark);
+    --destructive-color: var(--color-destructive-dark);
+}
+
+/* --- GENERAL STYLES --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-primary);
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
+    overflow: hidden;
+}
+
+.chat-container {
+    display: flex;
+    height: 100vh;
+}
+
+/* --- SIDEBAR --- */
+.sidebar {
+    width: 280px;
+    background-color: var(--sidebar-color);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    border-right: 1px solid var(--border-color);
+    transition: all var(--transition-speed) ease;
+    flex-shrink: 0;
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+.sidebar-header h2 { font-size: 1.2rem; }
+
+.sidebar-action-btn {
+    background: none; border: none; color: var(--text-secondary);
+    font-size: 1.2rem; cursor: pointer; transition: color var(--transition-speed) ease;
+}
+.sidebar-action-btn:hover { color: var(--accent-color); }
+
+.chat-history { flex-grow: 1; overflow-y: auto; }
+.chat-history ul { list-style: none; }
+.chat-history li {
+    display: flex; align-items: center; padding: 12px;
+    border-radius: 8px; cursor: pointer; margin-bottom: 10px;
+    font-weight: 500; transition: all var(--transition-speed) ease;
+    word-break: break-all;
+}
+.chat-history li:hover { background-color: var(--bg-color); }
+.chat-history li.active { background-color: var(--accent-color); color: white; }
+.chat-history li i { margin-right: 15px; font-size: 1.1rem; }
+
+.sidebar-footer .theme-toggle-btn {
+    width: 100%; display: flex; align-items: center; background: none;
+    border: 1px solid var(--border-color); padding: 10px; border-radius: 8px;
+    font-size: 1rem; font-family: var(--font-primary); color: var(--text-primary);
+    cursor: pointer; transition: all var(--transition-speed) ease;
+}
+.sidebar-footer .theme-toggle-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
+.theme-toggle-btn i { margin-right: 10px; }
+
+/* --- MAIN CHAT AREA --- */
+.chat-area {
+    flex-grow: 1; display: flex; flex-direction: column;
+    height: 100vh; background-color: var(--chat-area-color); position: relative;
+}
+
+.overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.4); z-index: 999;
+    opacity: 0; visibility: hidden; transition: all var(--transition-speed) ease;
+}
+.overlay.active { opacity: 1; visibility: visible; }
+
+.chat-header {
+    display: flex; align-items: center; padding: 0 20px; height: 70px;
+    background-color: var(--header-footer-color);
+    border-bottom: 1px solid var(--border-color); flex-shrink: 0;
+}
+.menu-btn {
+    display: none; font-size: 1.5rem; margin-right: 15px;
+    background: none; border: none; color: var(--text-primary); cursor: pointer;
+}
+.chat-title { flex-grow: 1; }
+.chat-title h1 { font-size: 1.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 30vw; }
+.chat-title p { font-size: 0.8rem; color: var(--text-secondary); }
+
+.chat-actions { display: flex; gap: 5px; }
+.chat-action-btn {
+    font-size: 1.2rem; background: none; border: none;
+    color: var(--text-secondary); cursor: pointer; transition: color var(--transition-speed) ease;
+    padding: 5px;
+}
+.chat-action-btn:hover { color: var(--accent-color); }
+.chat-action-btn.destructive:hover { color: var(--destructive-color); }
+
+/* --- MESSAGES --- */
+.messages-container {
+    flex-grow: 1; padding: 30px; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 5px;
+}
+.message {
+    display: flex; align-items: flex-end; max-width: 75%;
+    animation: message-appear 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    position: relative; margin-bottom: 15px;
+}
+@keyframes message-appear {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.message .avatar {
+    width: 40px; height: 40px; border-radius: 50%; background-color: var(--border-color);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; flex-shrink: 0; color: var(--text-secondary);
+}
+.message-content { padding: 15px 20px; border-radius: 18px; line-height: 1.6; }
+.message-content p { margin-bottom: 1em; }
+.message-content p:last-child { margin-bottom: 0; }
+.message-content pre { border-radius: 8px; padding: 1em; margin: 1em 0; }
+.message.editing-message .message-content {
+    background-color: #fefce8 !important;
+    color: #a16207 !important;
+    border: 2px solid #facc15;
+}
+body.dark-mode .message.editing-message .message-content {
+    background-color: #424031 !important;
+    color: #fef08a !important;
+    border-color: #eab308;
+}
+
+.user-message { align-self: flex-end; flex-direction: row-reverse; }
+.user-message .avatar { margin-left: 15px; }
+.user-message .message-content {
+    background-color: var(--user-msg-bg); color: var(--user-msg-text);
+    border-bottom-right-radius: 4px;
+}
+
+.bot-message { align-self: flex-start; }
+.bot-message .avatar { margin-right: 15px; }
+.bot-message .message-content { background-color: var(--bot-msg-bg); border-bottom-left-radius: 4px; }
+.bot-message .bot-typing-indicator {
+    display: flex; align-items: center; gap: 5px;
+}
+.bot-message .bot-typing-indicator .dot {
+    width: 8px; height: 8px; background-color: var(--text-secondary);
+    border-radius: 50%; animation: typing-dots 1.4s infinite ease-in-out both;
+}
+.bot-message .bot-typing-indicator .dot:nth-child(2) { animation-delay: 0.2s; }
+.bot-message .bot-typing-indicator .dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typing-dots {
+    0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); }
+}
+
+/* --- MESSAGE ACTIONS & VERSION NAV --- */
+.message-actions-container {
+    position: absolute; top: -15px; right: 0; z-index: 10;
+    display: none; align-items: center; gap: 5px;
+    background-color: var(--sidebar-color);
+    padding: 4px 8px; border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.user-message:hover .message-actions-container { display: flex; }
+.action-btn {
+    background: none; border: none; font-size: 0.9rem;
+    color: var(--text-secondary); cursor: pointer; transition: color 0.2s ease;
+}
+.action-btn:hover { color: var(--accent-color); }
+
+.version-nav {
+    position: absolute; bottom: -20px; right: 0;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.75rem; color: var(--text-secondary);
+}
+.nav-arrow {
+    background: var(--sidebar-color); border: 1px solid var(--border-color);
+    border-radius: 50%; width: 20px; height: 20px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s ease;
+}
+.nav-arrow:hover { border-color: var(--accent-color); color: var(--accent-color); }
+.nav-arrow.disabled {
+    cursor: not-allowed; opacity: 0.5;
+    color: var(--text-secondary); border-color: var(--border-color);
+}
+
+
+/* --- CHAT FOOTER & INPUT --- */
+.chat-footer {
+    padding: 20px; background-color: var(--header-footer-color);
+    border-top: 1px solid var(--border-color); flex-shrink: 0;
+}
+.quick-replies {
+    display: flex; gap: 10px; margin-bottom: 15px;
+    justify-content: center; flex-wrap: wrap;
+}
+.quick-btn {
+    background-color: var(--chat-area-color); border: 1px solid var(--border-color);
+    color: var(--text-primary); padding: 8px 15px; border-radius: 18px; cursor: pointer;
+    font-family: var(--font-primary); font-size: 0.9rem; transition: all var(--transition-speed) ease;
+}
+.quick-btn:hover {
+    background-color: var(--accent-color); border-color: var(--accent-color);
+    color: white; transform: translateY(-2px);
+}
+.input-area { display: flex; align-items: center; gap: 10px; }
+#user-input {
+    flex-grow: 1; height: 50px; border-radius: 25px; border: 1px solid var(--border-color);
+    background-color: var(--chat-area-color); padding: 0 20px; font-size: 1rem;
+    font-family: var(--font-primary); color: var(--text-primary); outline: none;
+    transition: border-color var(--transition-speed) ease;
+}
+#user-input:focus { border-color: var(--accent-color); }
+
+.input-action-btn, .send-btn {
+    height: 50px; width: 50px; border-radius: 50%; border: none; font-size: 1.2rem;
+    cursor: pointer; flex-shrink: 0; display: flex; align-items: center;
+    justify-content: center; transition: all var(--transition-speed) ease;
+}
+.input-action-btn { background-color: transparent; color: var(--text-secondary); }
+.input-action-btn:hover { color: var(--accent-color); background-color: var(--chat-area-color); }
+.input-action-btn.listening { color: white; background-color: var(--destructive-color); }
+.send-btn { background-color: var(--accent-color); color: white; }
+.send-btn:hover { transform: scale(1.1); opacity: 0.9; }
+
+/* --- RESPONSIVE DESIGN --- */
+@media (max-width: 992px) {
+    .sidebar {
+        position: absolute; left: -100%; top: 0; height: 100%;
+        z-index: 1000; box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
+    .sidebar.open { left: 0; }
+    .menu-btn { display: block; }
+    .chat-title h1 { max-width: 40vw; }
+}
+@media (max-width: 480px) {
+    .messages-container { padding: 15px; }
+    .message { max-width: 90%; }
+    .message-content { padding: 12px 15px; }
+    .chat-footer { padding: 15px; }
+    .chat-title h1 { max-width: 30vw; }
+}</style>
+        </head>
+        <body class="dark-mode">
+            
+
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TomeAI - Modern AI Assistant</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    
+    <link rel="stylesheet" href="style.css">
+
+
+
+    <div class="chat-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Chat History</h2>
+                <button class="sidebar-action-btn" id="new-chat-btn" aria-label="New Chat">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+            </div>
+            <div class="chat-history">
+                <ul id="chat-history-list"><li data-chat-id="chat-1754151054562"><i class="fa-regular fa-message"></i><span>Chat 02.08.2025</span></li><li data-chat-id="chat-1754151033910"><i class="fa-regular fa-message"></i><span>Chat 02.08.2025</span></li></ul>
+            </div>
+            <div class="sidebar-footer">
+                <button class="theme-toggle-btn" id="theme-toggle" aria-label="Toggle Theme">
+                    <i class="fa-solid fa-moon"></i> 
+                    <span>Dark Mode</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="chat-area">
+            <div class="overlay" id="overlay"></div>
+
+            <header class="chat-header">
+                <button class="menu-btn" id="menu-toggle" aria-label="Toggle Menu">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="chat-title">
+                    <h1 id="current-chat-title">TomeAI</h1>
+                    <p>Your Modern AI Assistant</p>
+                </div>
+                <div class="chat-actions">
+                    <button class="chat-action-btn" id="save-chat-btn" aria-label="Save Chat">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                    </button>
+                     <button class="chat-action-btn destructive" id="delete-chat-btn" aria-label="Delete Chat">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            </header>
+
+            <div class="messages-container" id="messages-container"><div class="message bot-message" data-message-id="msg-1754202775167"><div class="avatar"><i class="fa-solid fa-robot"></i></div><div class="message-content"><p>Hello! I'm <strong>TomeAI</strong>. How can I assist you today?</p>
+</div></div><div class="message user-message" data-message-id="msg-1754202804537"><div class="avatar"><i class="fa-solid fa-user"></i></div><div class="message-content"><p>привет</p>
+</div><div class="message-actions-container"><button class="action-btn" title="Edit"><i class="fa-solid fa-pencil"></i></button><button class="action-btn" title="Copy"><i class="fa-solid fa-copy"></i></button></div><div class="version-nav">
+            <button class="nav-arrow left-arrow disabled" title="Previous Version" disabled=""><i class="fa-solid fa-chevron-left"></i></button>
+            <span>1 / 2</span>
+            <button class="nav-arrow right-arrow" title="Next Version"><i class="fa-solid fa-chevron-right"></i></button>
+        </div></div><div class="message bot-message" data-message-id="msg-1754202805101"><div class="avatar"><i class="fa-solid fa-robot"></i></div><div class="message-content"><p>Привет! Рад видеть вас! Как я могу помочь вам сегодня?</p>
+</div></div></div>
+            
+            <footer class="chat-footer">
+                <div class="quick-replies" id="quick-replies">
+                    <button class="quick-btn" data-query="How does AI work?">🔍 How does AI work?</button>
+                    <button class="quick-btn" data-query="Suggest a good movie">🎬 Suggest a movie</button>
+                    <button class="quick-btn" data-query="Tell me a joke">😂 Tell me a joke</button>
+                </div>
+                <div class="input-area">
+                    <input type="text" id="user-input" placeholder="Type your message..." aria-label="Message input field">
+                    <button class="input-action-btn" id="voice-btn" aria-label="Use Voice">
+                        <i class="fa-solid fa-microphone"></i>
+                    </button>
+                    <button class="send-btn" id="send-btn" aria-label="Send Message">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <script src="script.js"></script>
+
+
+            <script>document.addEventListener('DOMContentLoaded', () => {
+
+    // --- CONFIGURATION ---
+    const config = {
+        apiKey: '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',
+        endpoint: 'https://api.groq.com/openai/v1/chat/completions',
+        model: 'llama3-70b-8192',
+    };
+
+    // --- DOM Elements ---
+    const elements = {
+        body: document.body,
+        sidebar: document.querySelector('.sidebar'),
+        menuToggle: document.getElementById('menu-toggle'),
+        overlay: document.getElementById('overlay'),
+        themeToggle: document.getElementById('theme-toggle'),
+        newChatBtn: document.getElementById('new-chat-btn'),
+        chatHistoryList: document.getElementById('chat-history-list'),
+        saveChatBtn: document.getElementById('save-chat-btn'),
+        deleteChatBtn: document.getElementById('delete-chat-btn'),
+        messagesContainer: document.getElementById('messages-container'),
+        userInput: document.getElementById('user-input'),
+        sendBtn: document.getElementById('send-btn'),
+        voiceBtn: document.getElementById('voice-btn'),
+        quickReplyButtons: document.querySelectorAll('.quick-btn'),
+        currentChatTitle: document.getElementById('current-chat-title'),
+    };
+
+    // --- Application State ---
+    let state = {
+        isDarkMode: false,
+        isTyping: false,
+        currentChatId: null,
+        editingMessageId: null,
+        recognition: null,
+        messageHistory: [],
+    };
+
+    // --- INITIALIZATION ---
+    const init = () => {
+        setupEventListeners();
+        loadThemePreference();
+        loadChatList();
+        startNewChat();
+    };
+    
+    // --- EVENT LISTENERS ---
+    const setupEventListeners = () => {
+        elements.themeToggle.addEventListener('click', toggleTheme);
+        elements.menuToggle.addEventListener('click', () => toggleSidebar(true));
+        elements.overlay.addEventListener('click', () => toggleSidebar(false));
+        elements.newChatBtn.addEventListener('click', startNewChat);
+        elements.sendBtn.addEventListener('click', handleSendMessage);
+        elements.userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !state.isTyping) handleSendMessage();
+        });
+        elements.quickReplyButtons.forEach(button => button.addEventListener('click', handleQuickReply));
+        elements.saveChatBtn.addEventListener('click', saveCurrentChat);
+        elements.deleteChatBtn.addEventListener('click', deleteCurrentChat);
+        elements.voiceBtn.addEventListener('click', toggleVoiceInput);
+    };
+
+    // --- CORE LOGIC (Chat, Edit, Versions) ---
+    const handleSendMessage = () => {
+        const text = elements.userInput.value.trim();
+        if (!text || state.isTyping) return;
+
+        if (state.editingMessageId) {
+            handleEditMessage(text);
+        } else {
+            const userMessage = { text, role: 'user', id: `msg-${Date.now()}` };
+            addMessage(userMessage);
+            state.messageHistory.push(userMessage);
+            elements.userInput.value = '';
+            getBotResponse();
+        }
+    };
+
+    const handleEditMessage = async (newText) => {
+        const userMsgIndex = state.messageHistory.findIndex(m => m.id === state.editingMessageId);
+        if (userMsgIndex === -1 || userMsgIndex === state.messageHistory.length - 1) {
+            // Cannot edit the last message or if it's not followed by a bot response
+            resetEditState();
+            return;
+        }
+
+        const userMsgObject = state.messageHistory[userMsgIndex];
+        const botMsgObject = state.messageHistory[userMsgIndex + 1];
+
+        // Ensure we are editing a user message followed by a bot message
+        if (userMsgObject.role !== 'user' || botMsgObject.role !== 'assistant') {
+            resetEditState();
+            return;
+        }
+
+        setUiLock(true);
+        const userMessageDOM = document.querySelector(`[data-message-id="${userMsgObject.id}"]`);
+        userMessageDOM.classList.add('editing-message'); // Show visual feedback
+
+        try {
+            // 1. Store the current version if it's the first edit
+            if (!userMsgObject.versions) {
+                userMsgObject.versions = [{
+                    userText: userMsgObject.text,
+                    botText: botMsgObject.text
+                }];
+                userMsgObject.isEdited = true;
+            }
+
+            // 2. Get new bot response based on new user text
+            const tempHistory = state.messageHistory.slice(0, userMsgIndex);
+            tempHistory.push({ role: 'user', text: newText });
+            const newBotText = await fetchBotResponse(tempHistory);
+
+            // 3. Add the new version
+            userMsgObject.versions.push({ userText: newText, botText: newBotText });
+            userMsgObject.currentVersion = userMsgObject.versions.length - 1;
+
+            // 4. Update the main message history array
+            userMsgObject.text = newText;
+            botMsgObject.text = newBotText;
+            
+            // 5. Update the DOM
+            updateMessageInDOM(userMsgObject.id, newText);
+            updateMessageInDOM(botMsgObject.id, newBotText);
+            addOrUpdateVersionNavigation(userMsgObject);
+
+        } catch (error) {
+            alert(`Failed to edit message: ${error.message}`);
+        } finally {
+            resetEditState();
+            setUiLock(false);
+            userMessageDOM.classList.remove('editing-message');
+        }
+    };
+
+    const fetchBotResponse = async (history) => {
+        const apiMessages = history.map(({ role, text }) => ({ role, content: text }));
+        apiMessages.unshift({ role: 'system', content: 'You are a helpful and versatile AI assistant.' });
+
+        const response = await fetch(config.endpoint, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${config.apiKey}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model: config.model, messages: apiMessages })
+        });
+        if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
+        const data = await response.json();
+        return data.choices[0].message.content;
+    };
+    
+    const getBotResponse = async () => {
+        state.isTyping = true;
+        setUiLock(true);
+        const typingIndicator = addTypingIndicator();
+        try {
+            const botText = await fetchBotResponse(state.messageHistory);
+            const botMessage = { text: botText, role: 'assistant', id: `msg-${Date.now()}` };
+            state.messageHistory.push(botMessage);
+            addMessage(botMessage);
+        } catch (error) {
+            console.error('Error fetching bot response:', error);
+            addMessage({ text: `Sorry, an error occurred: ${error.message}`, role: 'assistant', isError: true });
+        } finally {
+            typingIndicator.remove();
+            state.isTyping = false;
+            setUiLock(false);
+            hljs.highlightAll();
+        }
+    };
+    
+    // --- DOM MANIPULATION & UI ---
+    const addMessage = (message) => {
+        const { text, role, id, isError } = message;
+        const messageWrapper = document.createElement('div');
+        messageWrapper.className = `message ${role === 'user' ? 'user' : 'bot'}-message`;
+        messageWrapper.dataset.messageId = id;
+
+        const avatar = document.createElement('div');
+        avatar.className = 'avatar';
+        avatar.innerHTML = `<i class="fa-solid ${role === 'user' ? 'fa-user' : 'fa-robot'}"></i>`;
+
+        const messageContent = document.createElement('div');
+        messageContent.className = 'message-content';
+        messageContent.innerHTML = marked.parse(text);
+        if (isError) messageWrapper.classList.add('error-message');
+        
+        messageWrapper.appendChild(avatar);
+        messageWrapper.appendChild(messageContent);
+        
+        if (role === 'user') {
+            addMessageActions(messageWrapper, message);
+        }
+        if (message.isEdited) {
+            addOrUpdateVersionNavigation(message);
+        }
+        
+        elements.messagesContainer.appendChild(messageWrapper);
+        scrollToBottom();
+    };
+
+    const updateMessageInDOM = (messageId, newText) => {
+        const messageElement = document.querySelector(`[data-message-id="${messageId}"] .message-content`);
+        if (messageElement) {
+            messageElement.innerHTML = marked.parse(newText);
+        }
+        hljs.highlightAll();
+    };
+    
+    const addMessageActions = (messageWrapper, messageObject) => {
+        const { id, text } = messageObject;
+        const actionsContainer = document.createElement('div');
+        actionsContainer.className = 'message-actions-container';
+
+        const editBtn = document.createElement('button');
+        editBtn.className = 'action-btn';
+        editBtn.innerHTML = '<i class="fa-solid fa-pencil"></i>';
+        editBtn.title = 'Edit';
+        editBtn.onclick = () => {
+            state.editingMessageId = id;
+            elements.userInput.value = text;
+            elements.userInput.focus();
+            elements.userInput.placeholder = "Editing message... Press Enter to submit.";
+            messageWrapper.classList.add('editing-message');
+        };
+        actionsContainer.appendChild(editBtn);
+
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'action-btn';
+        copyBtn.innerHTML = '<i class="fa-solid fa-copy"></i>';
+        copyBtn.title = 'Copy';
+        copyBtn.onclick = () => navigator.clipboard.writeText(text).then(() => alert('Copied!'));
+        actionsContainer.appendChild(copyBtn);
+
+        messageWrapper.appendChild(actionsContainer);
+    };
+
+    const addOrUpdateVersionNavigation = (userMsgObject) => {
+        const messageWrapper = document.querySelector(`[data-message-id="${userMsgObject.id}"]`);
+        if (!messageWrapper) return;
+
+        let navContainer = messageWrapper.querySelector('.version-nav');
+        if (!navContainer) {
+            navContainer = document.createElement('div');
+            navContainer.className = 'version-nav';
+            messageWrapper.appendChild(navContainer);
+        }
+
+        const currentV = userMsgObject.currentVersion;
+        const totalV = userMsgObject.versions.length - 1;
+
+        navContainer.innerHTML = `
+            <button class="nav-arrow left-arrow" title="Previous Version"><i class="fa-solid fa-chevron-left"></i></button>
+            <span>${currentV + 1} / ${totalV + 1}</span>
+            <button class="nav-arrow right-arrow" title="Next Version"><i class="fa-solid fa-chevron-right"></i></button>
+        `;
+
+        const leftArrow = navContainer.querySelector('.left-arrow');
+        const rightArrow = navContainer.querySelector('.right-arrow');
+
+        leftArrow.disabled = currentV === 0;
+        leftArrow.classList.toggle('disabled', currentV === 0);
+        rightArrow.disabled = currentV === totalV;
+        rightArrow.classList.toggle('disabled', currentV === totalV);
+
+        leftArrow.onclick = () => navigateVersion(userMsgObject.id, 'prev');
+        rightArrow.onclick = () => navigateVersion(userMsgObject.id, 'next');
+    };
+    
+    const navigateVersion = (userMsgId, direction) => {
+        const userMsgIndex = state.messageHistory.findIndex(m => m.id === userMsgId);
+        if (userMsgIndex === -1) return;
+
+        const userMsgObject = state.messageHistory[userMsgIndex];
+        const botMsgObject = state.messageHistory[userMsgIndex + 1];
+
+        let newVersionIndex = userMsgObject.currentVersion;
+        if (direction === 'prev' && newVersionIndex > 0) {
+            newVersionIndex--;
+        } else if (direction === 'next' && newVersionIndex < userMsgObject.versions.length - 1) {
+            newVersionIndex++;
+        } else {
+            return;
+        }
+
+        userMsgObject.currentVersion = newVersionIndex;
+        const versionData = userMsgObject.versions[newVersionIndex];
+
+        // Update main state
+        userMsgObject.text = versionData.userText;
+        botMsgObject.text = versionData.botText;
+
+        // Update DOM
+        updateMessageInDOM(userMsgObject.id, versionData.userText);
+        updateMessageInDOM(botMsgObject.id, versionData.botText);
+        addOrUpdateVersionNavigation(userMsgObject);
+    };
+
+    const resetEditState = () => {
+        if (state.editingMessageId) {
+            const oldEditingMsg = document.querySelector(`[data-message-id="${state.editingMessageId}"]`);
+            if (oldEditingMsg) oldEditingMsg.classList.remove('editing-message');
+        }
+        state.editingMessageId = null;
+        elements.userInput.value = '';
+        elements.userInput.placeholder = "Type your message...";
+    };
+
+    // --- All other functions (Theme, Sidebar, Storage, Voice, etc.) ---
+    // These functions from the previous version remain unchanged.
+    // I am including them here for completeness.
+    
+    const toggleTheme = () => {
+        state.isDarkMode = !state.isDarkMode;
+        applyTheme();
+        localStorage.setItem('darkModeEnabled', state.isDarkMode);
+    };
+
+    const applyTheme = () => {
+        elements.body.classList.toggle('dark-mode', state.isDarkMode);
+        const themeIcon = elements.themeToggle.querySelector('i');
+        const themeText = elements.themeToggle.querySelector('span');
+        themeIcon.className = state.isDarkMode ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+        themeText.textContent = state.isDarkMode ? 'Dark Mode' : 'Light Mode';
+    };
+
+    const loadThemePreference = () => {
+        state.isDarkMode = localStorage.getItem('darkModeEnabled') === 'true';
+        applyTheme();
+    };
+
+    const toggleSidebar = (force) => {
+        elements.sidebar.classList.toggle('open', force);
+        elements.overlay.classList.toggle('active', force);
+    };
+
+    const startNewChat = () => {
+        resetEditState();
+        state.currentChatId = null;
+        state.messageHistory = [];
+        elements.messagesContainer.innerHTML = '';
+        elements.currentChatTitle.textContent = 'TomeAI';
+        updateActiveChatInList(null);
+        addMessage({ text: "Hello! I'm **TomeAI**. How can I assist you today?", role: 'assistant', id: `msg-${Date.now()}` });
+        toggleSidebar(false);
+    };
+    
+    const loadChatList = () => {
+        const chats = JSON.parse(localStorage.getItem('chats') || '{}');
+        elements.chatHistoryList.innerHTML = '';
+        Object.entries(chats)
+            .sort(([, a], [, b]) => new Date(b.date) - new Date(a.date))
+            .forEach(([id, chat]) => {
+                const li = document.createElement('li');
+                li.dataset.chatId = id;
+                li.innerHTML = `<i class="fa-regular fa-message"></i><span>${chat.name}</span>`;
+                li.addEventListener('click', () => loadChat(id));
+                elements.chatHistoryList.appendChild(li);
+            });
+    };
+
+    const loadChat = (id) => {
+        const chats = JSON.parse(localStorage.getItem('chats') || '{}');
+        const chat = chats[id];
+        if (chat) {
+            state.currentChatId = id;
+            state.messageHistory = chat.messages; // This history now contains versioned messages
+            elements.messagesContainer.innerHTML = '';
+            elements.currentChatTitle.textContent = chat.name;
+            state.messageHistory.forEach(addMessage); // addMessage will handle rendering versions
+            hljs.highlightAll();
+            updateActiveChatInList(id);
+            toggleSidebar(false);
+        }
+    };
+
+    const saveCurrentChat = () => {
+        if (state.messageHistory.length < 2) {
+            alert("Not enough messages to save the chat."); return;
+        }
+        let chatName = state.currentChatId ? JSON.parse(localStorage.getItem('chats'))[state.currentChatId].name : prompt('Enter a name for this chat:', `Chat ${new Date().toLocaleDateString()}`);
+        if (!chatName) return;
+
+        const chats = JSON.parse(localStorage.getItem('chats') || '{}');
+        const idToSave = state.currentChatId || `chat-${Date.now()}`;
+        chats[idToSave] = { name: chatName, messages: state.messageHistory, date: new Date().toISOString() };
+        localStorage.setItem('chats', JSON.stringify(chats));
+        state.currentChatId = idToSave;
+        elements.currentChatTitle.textContent = chatName;
+        loadChatList();
+        updateActiveChatInList(idToSave);
+        alert('Chat saved!');
+    };
+
+    const deleteCurrentChat = () => {
+        if (!state.currentChatId) {
+            alert("This is a new chat. Save it before you can delete it."); return;
+        }
+        if (confirm("Are you sure you want to delete this chat permanently?")) {
+            const chats = JSON.parse(localStorage.getItem('chats') || '{}');
+            delete chats[state.currentChatId];
+            localStorage.setItem('chats', JSON.stringify(chats));
+            loadChatList();
+            startNewChat();
+        }
+    };
+    
+    const updateActiveChatInList = (id) => {
+        document.querySelectorAll('#chat-history-list li').forEach(li => {
+            li.classList.toggle('active', li.dataset.chatId === id);
+        });
+    };
+    
+    const handleQuickReply = (e) => {
+        const query = e.target.dataset.query;
+        if (query) { elements.userInput.value = query; handleSendMessage(); }
+    };
+    
+    const setUiLock = (isLocked) => {
+        elements.userInput.disabled = isLocked;
+        elements.sendBtn.disabled = isLocked;
+    };
+
+    const scrollToBottom = () => {
+        elements.messagesContainer.scrollTop = elements.messagesContainer.scrollHeight;
+    };
+
+    const addTypingIndicator = () => {
+        const indicator = document.createElement('div');
+        indicator.className = 'message bot-message';
+        indicator.innerHTML = `<div class="avatar"><i class="fa-solid fa-robot"></i></div><div class="message-content bot-typing-indicator"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+        elements.messagesContainer.appendChild(indicator);
+        scrollToBottom();
+        return indicator;
+    };
+    
+    const toggleVoiceInput = () => {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) { alert("Sorry, your browser doesn't support voice recognition."); return; }
+        if (state.recognition && elements.voiceBtn.classList.contains('listening')) { state.recognition.stop(); return; }
+
+        state.recognition = new SpeechRecognition();
+        state.recognition.interimResults = false;
+        state.recognition.lang = 'en-US';
+        state.recognition.onstart = () => { elements.voiceBtn.classList.add('listening'); elements.voiceBtn.title = 'Stop listening'; };
+        state.recognition.onresult = (event) => { elements.userInput.value = event.results[0][0].transcript; handleSendMessage(); };
+        state.recognition.onend = () => { elements.voiceBtn.classList.remove('listening'); elements.voiceBtn.title = 'Use Voice'; state.recognition = null; };
+        state.recognition.onerror = (event) => { alert(`Voice recognition error: ${event.error}`); };
+        state.recognition.start();
+    };
+
+    // --- Let's go! ---
+    init();
+});</script>
+        
+    
+</body>
